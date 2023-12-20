@@ -70,7 +70,7 @@ def add_args(parser):
                         help="Dataset types.", choices=['shapenet15k', 'modelnet40_15k', 'modelnet10_15k'])
     parser.add_argument('--cates', type=str, nargs='+', default=["airplane"],
                         help="Categories to be trained (useful only if 'shapenet' is selected)")
-    parser.add_argument('--data_dir', type=str, default="data/ShapeNetCore.v2.PC15k",
+    parser.add_argument('--data_dir', type=str, default="/workspace/dataset/ShapeNet/ShapeNetCore.v2.PC15k",
                         help="Path to the training data")
     parser.add_argument('--mn40_data_dir', type=str, default="data/ModelNet40.PC15k",
                         help="Path to ModelNet40")
