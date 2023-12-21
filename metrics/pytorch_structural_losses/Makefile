@@ -42,7 +42,8 @@ STATIC_LIB := $(OBJ_DIR)/libmake_pytorch.a
 # For CUDA < 8.0, comment the *_60 and *_61 lines for compatibility.
 CUDA_ARCH :=	-gencode arch=compute_61,code=sm_61 \
 		-gencode arch=compute_61,code=compute_61 \
-		-gencode arch=compute_52,code=sm_52
+		-gencode arch=compute_52,code=sm_52 \
+		-gencode arch=compute_89,code=sm_89
 
 # We will also explicitly add stdc++ to the link target.
 LIBRARIES += stdc++ cudart c10 caffe2 torch torch_python caffe2_gpu
