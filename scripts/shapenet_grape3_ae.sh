@@ -12,6 +12,7 @@ epochs=4000
 ds=shapenet15k
 log_name="ae/${ds}-cate${cate}"
 data_dir="/workspace/dataset/ShapeNet/ShapeNetCore.v2.PC15k/"
+resume_checkpoint="checkpoints/ae/shapenet15k-categrape3/checkpoint-latest.pt"
 
 python train.py \
     --log_name ${log_name} \
@@ -32,7 +33,8 @@ python train.py \
     --val_freq 10 \
     --use_deterministic_encoder \
     --prior_weight 0 \
-    --entropy_weight 0
+    --entropy_weight 0 \
+    --resume_checkpoint ${resume_checkpoint}
 
 echo "Done"
 exit 0

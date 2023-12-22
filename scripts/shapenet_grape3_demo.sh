@@ -1,5 +1,7 @@
 #! /bin/bash
 
+
+
 python demo.py \
     --cates airplane \
     --resume_checkpoint pretrained_models/gen/airplane/checkpoint.pt \
