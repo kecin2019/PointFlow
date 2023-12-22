@@ -318,7 +318,7 @@ def main_worker(gpu, save_dir, ngpus_per_node, args):
                     )
                     results.append(res)
                 res = np.concatenate(results, axis=1)
-                imageio.imwrite.imsave(
+                imageio.imwrite(
                     os.path.join(
                         save_dir,
                         "images",

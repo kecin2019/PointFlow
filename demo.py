@@ -19,7 +19,7 @@ def main(args):
 
     print("Resume Path:%s" % args.resume_checkpoint)
     checkpoint = torch.load(args.resume_checkpoint)
-    model.load_state_dict(checkpoint)
+    model.load_state_dict(checkpoint, strict=False)
     model.eval()
 
     _, te_dataset = get_datasets(args)
@@ -55,6 +55,6 @@ def main(args):
         o3d.visualization.draw_geometries([pcl])
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     args = get_args()
     main(args)
