@@ -46,13 +46,18 @@ def main(args):
     os.makedirs("demo", exist_ok=True)
     np.save(os.path.join("demo", "model_out_smp.npy"), sample_pcs)
 
-    # Visualize the demo
-    pcl = o3d.geometry.PointCloud()
-    for i in range(int(sample_pcs.shape[0])):
-        print("Visualizing: %03d/%03d" % (i, sample_pcs.shape[0]))
-        pts = sample_pcs[i].reshape(-1, 3)
-        pcl.points = o3d.utility.Vector3dVector(pts)
-        o3d.visualization.draw_geometries([pcl])
+    # Save the point clouds as text files
+    for i in range(sample_pcs.shape[0]):
+        filename = "pointcloud_%03d.txt" % i
+        np.savetxt(os.path.join("demo", filename), sample_pcs[i], fmt="%s")
+
+    # # Visualize the demo
+    # pcl = o3d.geometry.PointCloud()
+    # for i in range(int(sample_pcs.shape[0])):
+    #     print("Visualizing: %03d/%03d" % (i, sample_pcs.shape[0]))
+    #     pts = sample_pcs[i].reshape(-1, 3)
+    #     pcl.points = o3d.utility.Vector3dVector(pts)
+    #     o3d.visualization.draw_geometries([pcl])
 
 
 if __name__ == "__main__":

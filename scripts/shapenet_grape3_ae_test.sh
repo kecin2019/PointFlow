@@ -1,10 +1,12 @@
 #! /bin/bash
 
+cate="grape3"
+dims="512-512-512"
 resume_checkpoint="checkpoints/ae/shapenet15k-categrape3/checkpoint-latest.pt"
 
 python test.py \
-    --cates grape3 \
+    --cates ${cate} \
     --resume_checkpoint ${resume_checkpoint} \
-    --dims 512-512-512 \
+    --dims ${dims} \
     --use_deterministic_encoder \
-    --evaluate_recon
+    --evaluate_recon 
