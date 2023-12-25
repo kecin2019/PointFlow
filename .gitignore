@@ -22,3 +22,6 @@ checkpoint
 torchdiffeq/
 demo/
 pretrained_models/
+ptvis.py
+model_params.txt
+model_params2.txt
