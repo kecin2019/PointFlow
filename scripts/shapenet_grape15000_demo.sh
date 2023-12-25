@@ -1,7 +1,7 @@
 #! /bin/bash
 
 python demo.py \
-    --cates airplane \
+    --cates grape15000 \
     --resume_checkpoint pretrained_models/gen/airplane/checkpoint.pt \
     --dims 512-512-512 \
     --latent_dims 256-256 \

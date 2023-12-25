@@ -1,6 +1,6 @@
 #! /bin/bash
 
-cate="airplane"
+cate="grape15000"
 dims="512-512-512"
 latent_dims="256-256"
 num_blocks=1
@@ -10,8 +10,8 @@ batch_size=16
 lr=2e-3
 epochs=4000
 ds=shapenet15k
-log_name="gen/${ds}-cate${cate}"
-data_dir="/workspace/dataset/ShapeNet/ShapeNetCore.v2.PC15k"
+log_name="ae/${ds}-cate${cate}"
+data_dir="/workspace/dataset/ShapeNet/ShapeNetCore.v2.PC15k/"
 
 python train.py \
     --log_name ${log_name} \
@@ -27,10 +27,12 @@ python train.py \
     --zdim ${zdim} \
     --epochs ${epochs} \
     --save_freq 50 \
-    --viz_freq 1 \
-    --log_freq 1 \
+    --viz_freq 10 \
+    --log_freq 10 \
     --val_freq 10 \
-    --use_latent_flow
+    --use_deterministic_encoder \
+    --prior_weight 0 \
+    --entropy_weight 0
 
 echo "Done"
 exit 0

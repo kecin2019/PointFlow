@@ -21,8 +21,8 @@ def add_args(parser):
         default=3,
         help="Number of input dimensions (3 for 3D point clouds)",
     )
-    parser.add_argument("--dims", type=str, default="512-512-512")
-    parser.add_argument("--latent_dims", type=str, default="256-256")
+    parser.add_argument("--dims", type=str, default="256")
+    parser.add_argument("--latent_dims", type=str, default="256")
     parser.add_argument(
         "--num_blocks", type=int, default=1, help="Number of stacked CNFs."
     )
@@ -69,7 +69,7 @@ def add_args(parser):
     parser.add_argument(
         "--batch_size",
         type=int,
-        default=50,
+        default=32,
         help="Batch size (of datasets) for training",
     )
     parser.add_argument(
