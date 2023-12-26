@@ -6,7 +6,7 @@ latent_dims="256-256"
 num_blocks=1
 latent_num_blocks=1
 zdim=128
-batch_size=32
+batch_size=4
 lr=2e-3
 epochs=4000
 ds=shapenet15k
@@ -30,6 +30,7 @@ python train.py \
     --viz_freq 10 \
     --log_freq 10 \
     --val_freq 10 \
+    --tr_max_sample_points 10000 \
     --use_latent_flow
 
 echo "Done"
