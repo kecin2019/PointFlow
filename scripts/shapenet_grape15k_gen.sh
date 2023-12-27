@@ -1,6 +1,6 @@
 #! /bin/bash
 
-cate="grape15000"
+cate="grape15k"
 dims="512-512-512"
 latent_dims="256-256"
 num_blocks=1

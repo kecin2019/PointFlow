@@ -1,17 +1,18 @@
 #! /bin/bash
 
-cate="grape3"
+cate="grape15k"
 dims="512-512-512"
 latent_dims="256-256"
 num_blocks=1
 latent_num_blocks=1
 zdim=128
-batch_size=16
+batch_size=32
 lr=2e-3
 epochs=4000
 ds=shapenet15k
-log_name="ae/${ds}-cate${cate}"
-data_dir="/workspace/dataset/ShapeNet/ShapeNetCore.v2.PC15k/"
+log_name="gen/${ds}-cate${cate}"
+data_dir="/workspace/dataset/ShapeNet/ShapeNetCore.v2.PC15k"
+resume_checkpoint="checkpoints/gen/shapenet15k-categrape15000/checkpoint-latest.pt"
 
 python train.py \
     --log_name ${log_name} \
@@ -30,9 +31,9 @@ python train.py \
     --viz_freq 10 \
     --log_freq 10 \
     --val_freq 10 \
-    --use_deterministic_encoder \
-    --prior_weight 0 \
-    --entropy_weight 0
+    --use_latent_flow \
+    --resume_checkpoint ${resume_checkpoint} \
+    --resume_optimizer
 
 echo "Done"
 exit 0

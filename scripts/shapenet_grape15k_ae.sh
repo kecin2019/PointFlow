@@ -1,17 +1,17 @@
 #! /bin/bash
 
-cate="grape15000"
+cate="grape15k"
 dims="512-512-512"
 latent_dims="256-256"
 num_blocks=1
 latent_num_blocks=1
 zdim=128
-batch_size=4
+batch_size=16
 lr=2e-3
 epochs=4000
 ds=shapenet15k
-log_name="gen/${ds}-cate${cate}"
-data_dir="/workspace/dataset/ShapeNet/ShapeNetCore.v2.PC15k"
+log_name="ae/${ds}-cate${cate}"
+data_dir="/workspace/dataset/ShapeNet/ShapeNetCore.v2.PC15k/"
 
 python train.py \
     --log_name ${log_name} \
@@ -30,10 +30,9 @@ python train.py \
     --viz_freq 10 \
     --log_freq 10 \
     --val_freq 10 \
-    --tr_max_sample_points 10000 \
-    --te_max_sample_points 5000 \
-    --use_latent_flow \
-    --normalize_per_shape
+    --use_deterministic_encoder \
+    --prior_weight 0 \
+    --entropy_weight 0
 
 echo "Done"
 exit 0
