@@ -17,16 +17,20 @@ def distChamfer(a, b):
     diag_ind = torch.arange(0, num_points).to(a).long()
     rx = xx[:, diag_ind, diag_ind].unsqueeze(1).expand_as(xx)
     ry = yy[:, diag_ind, diag_ind].unsqueeze(1).expand_as(yy)
-    P = (rx.transpose(2, 1) + ry - 2 * zz)
+    P = rx.transpose(2, 1) + ry - 2 * zz
     return P.min(1)[0], P.min(2)[0]
+
 
 # Import CUDA version of approximate EMD, from https://github.com/zekunhao1995/pcgan-pytorch/
 try:
     from .StructuralLosses.nn_distance import nn_distance
+
     def distChamferCUDA(x, y):
         return nn_distance(x, y)
+
 except:
     print("distChamferCUDA not available; fall back to slower version.")
+
     def distChamferCUDA(x, y):
         return distChamfer(x, y)
 
@@ -53,20 +57,29 @@ def emd_approx(x, y):
 
 try:
     from .StructuralLosses.match_cost import match_cost
+
     def emd_approx_cuda(sample, ref):
         B, N, N_ref = sample.size(0), sample.size(1), ref.size(1)
         assert N == N_ref, "Not sure what would EMD do in this case"
         emd = match_cost(sample, ref)  # (B,)
         emd_norm = emd / float(N)  # (B,)
         return emd_norm
+
 except:
     print("emd_approx_cuda not available. Fall back to slower version.")
+
     def emd_approx_cuda(sample, ref):
         return emd_approx(sample, ref)
 
 
-def EMD_CD(sample_pcs, ref_pcs, batch_size, accelerated_cd=False, reduced=True,
-           accelerated_emd=False):
+def EMD_CD(
+    sample_pcs,
+    ref_pcs,
+    batch_size,
+    accelerated_cd=False,
+    reduced=True,
+    accelerated_emd=False,
+):
     N_sample = sample_pcs.shape[0]
     N_ref = ref_pcs.shape[0]
     assert N_sample == N_ref, "REF:%d SMP:%d" % (N_ref, N_sample)
@@ -100,14 +113,15 @@ def EMD_CD(sample_pcs, ref_pcs, batch_size, accelerated_cd=False, reduced=True,
         emd = torch.cat(emd_lst)
 
     results = {
-        'MMD-CD': cd,
-        'MMD-EMD': emd,
+        "MMD-CD": cd,
+        "MMD-EMD": emd,
     }
     return results
 
 
-def _pairwise_EMD_CD_(sample_pcs, ref_pcs, batch_size, accelerated_cd=True,
-                      accelerated_emd=True):
+def _pairwise_EMD_CD_(
+    sample_pcs, ref_pcs, batch_size, accelerated_cd=True, accelerated_emd=True
+):
     N_sample = sample_pcs.shape[0]
     N_ref = ref_pcs.shape[0]
     all_cd = []
@@ -123,7 +137,9 @@ def _pairwise_EMD_CD_(sample_pcs, ref_pcs, batch_size, accelerated_cd=True,
             ref_batch = ref_pcs[ref_b_start:ref_b_end]
 
             batch_size_ref = ref_batch.size(0)
-            sample_batch_exp = sample_batch.view(1, -1, 3).expand(batch_size_ref, -1, -1)
+            sample_batch_exp = sample_batch.view(1, -1, 3).expand(
+                batch_size_ref, -1, -1
+            )
             sample_batch_exp = sample_batch_exp.contiguous()
 
             if accelerated_cd and distChamferCUDA is not None:
@@ -154,11 +170,15 @@ def knn(Mxx, Mxy, Myy, k, sqrt=False):
     n0 = Mxx.size(0)
     n1 = Myy.size(0)
     label = torch.cat((torch.ones(n0), torch.zeros(n1))).to(Mxx)
-    M = torch.cat((torch.cat((Mxx, Mxy), 1), torch.cat((Mxy.transpose(0, 1), Myy), 1)), 0)
+    M = torch.cat(
+        (torch.cat((Mxx, Mxy), 1), torch.cat((Mxy.transpose(0, 1), Myy), 1)), 0
+    )
     if sqrt:
         M = M.abs().sqrt()
-    INFINITY = float('inf')
-    val, idx = (M + torch.diag(INFINITY * torch.ones(n0 + n1).to(Mxx))).topk(k, 0, False)
+    INFINITY = float("inf")
+    val, idx = (M + torch.diag(INFINITY * torch.ones(n0 + n1).to(Mxx))).topk(
+        k, 0, False
+    )
 
     count = torch.zeros(n0 + n1).to(Mxx)
     for i in range(0, k):
@@ -166,19 +186,21 @@ def knn(Mxx, Mxy, Myy, k, sqrt=False):
     pred = torch.ge(count, (float(k) / 2) * torch.ones(n0 + n1).to(Mxx)).float()
 
     s = {
-        'tp': (pred * label).sum(),
-        'fp': (pred * (1 - label)).sum(),
-        'fn': ((1 - pred) * label).sum(),
-        'tn': ((1 - pred) * (1 - label)).sum(),
+        "tp": (pred * label).sum(),
+        "fp": (pred * (1 - label)).sum(),
+        "fn": ((1 - pred) * label).sum(),
+        "tn": ((1 - pred) * (1 - label)).sum(),
     }
 
-    s.update({
-        'precision': s['tp'] / (s['tp'] + s['fp'] + 1e-10),
-        'recall': s['tp'] / (s['tp'] + s['fn'] + 1e-10),
-        'acc_t': s['tp'] / (s['tp'] + s['fn'] + 1e-10),
-        'acc_f': s['tn'] / (s['tn'] + s['fp'] + 1e-10),
-        'acc': torch.eq(label, pred).float().mean(),
-    })
+    s.update(
+        {
+            "precision": s["tp"] / (s["tp"] + s["fp"] + 1e-10),
+            "recall": s["tp"] / (s["tp"] + s["fn"] + 1e-10),
+            "acc_t": s["tp"] / (s["tp"] + s["fn"] + 1e-10),
+            "acc_f": s["tn"] / (s["tn"] + s["fp"] + 1e-10),
+            "acc": torch.eq(label, pred).float().mean(),
+        }
+    )
     return s
 
 
@@ -191,39 +213,41 @@ def lgan_mmd_cov(all_dist):
     cov = float(min_idx.unique().view(-1).size(0)) / float(N_ref)
     cov = torch.tensor(cov).to(all_dist)
     return {
-        'lgan_mmd': mmd,
-        'lgan_cov': cov,
-        'lgan_mmd_smp': mmd_smp,
+        "lgan_mmd": mmd,
+        "lgan_cov": cov,
+        "lgan_mmd_smp": mmd_smp,
     }
 
 
 def compute_all_metrics(sample_pcs, ref_pcs, batch_size, accelerated_cd=False):
     results = {}
 
-    M_rs_cd, M_rs_emd = _pairwise_EMD_CD_(ref_pcs, sample_pcs, batch_size, accelerated_cd=accelerated_cd)
+    M_rs_cd, M_rs_emd = _pairwise_EMD_CD_(
+        ref_pcs, sample_pcs, batch_size, accelerated_cd=accelerated_cd
+    )
 
     res_cd = lgan_mmd_cov(M_rs_cd.t())
-    results.update({
-        "%s-CD" % k: v for k, v in res_cd.items()
-    })
+    results.update({"%s-CD" % k: v for k, v in res_cd.items()})
 
     res_emd = lgan_mmd_cov(M_rs_emd.t())
-    results.update({
-        "%s-EMD" % k: v for k, v in res_emd.items()
-    })
+    results.update({"%s-EMD" % k: v for k, v in res_emd.items()})
 
-    M_rr_cd, M_rr_emd = _pairwise_EMD_CD_(ref_pcs, ref_pcs, batch_size, accelerated_cd=accelerated_cd)
-    M_ss_cd, M_ss_emd = _pairwise_EMD_CD_(sample_pcs, sample_pcs, batch_size, accelerated_cd=accelerated_cd)
+    M_rr_cd, M_rr_emd = _pairwise_EMD_CD_(
+        ref_pcs, ref_pcs, batch_size, accelerated_cd=accelerated_cd
+    )
+    M_ss_cd, M_ss_emd = _pairwise_EMD_CD_(
+        sample_pcs, sample_pcs, batch_size, accelerated_cd=accelerated_cd
+    )
 
     # 1-NN results
     one_nn_cd_res = knn(M_rr_cd, M_rs_cd, M_ss_cd, 1, sqrt=False)
-    results.update({
-        "1-NN-CD-%s" % k: v for k, v in one_nn_cd_res.items() if 'acc' in k
-    })
+    results.update(
+        {"1-NN-CD-%s" % k: v for k, v in one_nn_cd_res.items() if "acc" in k}
+    )
     one_nn_emd_res = knn(M_rr_emd, M_rs_emd, M_ss_emd, 1, sqrt=False)
-    results.update({
-        "1-NN-EMD-%s" % k: v for k, v in one_nn_emd_res.items() if 'acc' in k
-    })
+    results.update(
+        {"1-NN-EMD-%s" % k: v for k, v in one_nn_emd_res.items() if "acc" in k}
+    )
 
     return results
 
@@ -261,7 +285,9 @@ def jsd_between_point_cloud_sets(sample_pcs, ref_pcs, resolution=28):
         resolution: (int) grid-resolution. Affects granularity of measurements.
     """
     in_unit_sphere = True
-    sample_grid_var = entropy_of_occupancy_grid(sample_pcs, resolution, in_unit_sphere)[1]
+    sample_grid_var = entropy_of_occupancy_grid(sample_pcs, resolution, in_unit_sphere)[
+        1
+    ]
     ref_grid_var = entropy_of_occupancy_grid(ref_pcs, resolution, in_unit_sphere)[1]
     return jensen_shannon_divergence(sample_grid_var, ref_grid_var)
 
@@ -277,11 +303,11 @@ def entropy_of_occupancy_grid(pclouds, grid_resolution, in_sphere=False, verbose
     bound = 0.5 + epsilon
     if abs(np.max(pclouds)) > bound or abs(np.min(pclouds)) > bound:
         if verbose:
-            warnings.warn('Point-clouds are not in unit cube.')
+            warnings.warn("Point-clouds are not in unit cube.")
 
-    if in_sphere and np.max(np.sqrt(np.sum(pclouds ** 2, axis=2))) > bound:
+    if in_sphere and np.max(np.sqrt(np.sum(pclouds**2, axis=2))) > bound:
         if verbose:
-            warnings.warn('Point-clouds are not in unit sphere.')
+            warnings.warn("Point-clouds are not in unit sphere.")
 
     grid_coordinates, _ = unit_cube_grid_point_cloud(grid_resolution, in_sphere)
     grid_coordinates = grid_coordinates.reshape(-1, 3)
@@ -310,9 +336,9 @@ def entropy_of_occupancy_grid(pclouds, grid_resolution, in_sphere=False, verbose
 
 def jensen_shannon_divergence(P, Q):
     if np.any(P < 0) or np.any(Q < 0):
-        raise ValueError('Negative values.')
+        raise ValueError("Negative values.")
     if len(P) != len(Q):
-        raise ValueError('Non equal size.')
+        raise ValueError("Non equal size.")
 
     P_ = P / np.sum(P)  # Ensure probabilities.
     Q_ = Q / np.sum(Q)
@@ -325,7 +351,7 @@ def jensen_shannon_divergence(P, Q):
     res2 = _jsdiv(P_, Q_)
 
     if not np.allclose(res, res2, atol=10e-5, rtol=0):
-        warnings.warn('Numerical values of two JSD methods don\'t agree.')
+        warnings.warn("Numerical values of two JSD methods don't agree.")
 
     return res
 

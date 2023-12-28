@@ -372,13 +372,13 @@ class ShapeNetCorePC(Dataset):
         return self.all_points_mean.reshape(1, -1), self.all_points_std.reshape(1, -1)
 
     # TODO: 这个函数有起到什么作用？我们是否可以删除这个函数？
-    def renormalize(self, mean, std):
-        self.all_points = self.all_points * self.all_points_std + self.all_points_mean
-        self.all_points_mean = mean
-        self.all_points_std = std
-        self.all_points = (self.all_points - self.all_points_mean) / self.all_points_std
-        self.train_points = self.all_points[:, :10000]
-        self.test_points = self.all_points[:, 10000:]
+    # def renormalize(self, mean, std):
+    #     self.all_points = self.all_points * self.all_points_std + self.all_points_mean
+    #     self.all_points_mean = mean
+    #     self.all_points_std = std
+    #     self.all_points = (self.all_points - self.all_points_mean) / self.all_points_std
+    #     self.train_points = self.all_points[:, :10000]
+    #     self.test_points = self.all_points[:, 10000:]
 
     def __len__(self):
         return len(self.train_points)

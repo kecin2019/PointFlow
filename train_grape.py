@@ -219,9 +219,10 @@ def main_worker(gpu, save_dir, ngpus_per_node, args):
 
         # adjust the learning rate
         if (epoch + 1) % args.exp_decay_freq == 0:
-            scheduler.step(epoch=epoch)
+            optimizer.step()
+            scheduler.step()
             if writer is not None:
-                writer.add_scalar("lr/optimizer", scheduler.get_lr()[0], epoch)
+                writer.add_scalar("lr/optimizer", scheduler.get_last_lr()[0], epoch)
 
         # train for one epoch
         for bidx, data in enumerate(train_loader):
