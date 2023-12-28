@@ -1,6 +1,6 @@
 #! /bin/bash
 
-python demo_grape.py \
+python demo.py \
     --cates grape15k \
     --resume_checkpoint checkpoints/gen/tmp/shapenet15k-categrape15000/checkpoint-latest.pt \
     --dims 512-512-512 \

@@ -6,6 +6,7 @@ import os
 import torch
 import numpy as np
 import torch.nn as nn
+from visualize import visualize_pointcloud_batch
 
 
 def main(args):
@@ -31,13 +32,23 @@ def main(args):
     ds_std = torch.from_numpy(te_dataset.all_points_std).cuda()
 
     all_sample = []
+
+    os.makedirs("demo", exist_ok=True)
     with torch.no_grad():
-        for i in range(0, args.num_sample_shapes, args.batch_size):
-            B = len(range(i, min(i + args.batch_size, args.num_sample_shapes)))
+        for i in range(0, args.num_sample_shapes, 9):
+            B = len(range(i, min(i + 9, args.num_sample_shapes)))
             N = args.num_sample_points
             _, out_pc = model.sample(B, N)
             out_pc = out_pc * ds_std + ds_mean
             all_sample.append(out_pc)
+
+            visualize_pointcloud_batch(
+                os.path.join("demo", "%d.png" % i),
+                out_pc[:64],
+                None,
+                None,
+                None,
+            )
 
     sample_pcs = torch.cat(all_sample, dim=0).cpu().detach().numpy()
     print("Generation sample size:(%s, %s, %s)" % sample_pcs.shape)
