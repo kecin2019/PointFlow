@@ -30,7 +30,7 @@ python train.py \
     --viz_freq 10 \
     --log_freq 10 \
     --val_freq 10 \
-    --tr_max_sample_points 10000 \
+    --tr_max_sample_points 5000 \
     --te_max_sample_points 5000 \
     --use_latent_flow \
     --normalize_per_shape

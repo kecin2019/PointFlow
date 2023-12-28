@@ -13,7 +13,7 @@ ds=shapenet15k
 log_name="gen/${ds}-cate${cate}"
 data_dir="/workspace/dataset/ShapeNet/ShapeNetCore.v2.PC15k"
 
-python train.py \
+python train_grape.py \
     --log_name ${log_name} \
     --lr ${lr} \
     --dataset_type ${ds} \
@@ -33,7 +33,7 @@ python train.py \
     --tr_max_sample_points 10000 \
     --te_max_sample_points 5000 \
     --use_latent_flow \
-    --normalize_per_shape
+    --normalize_std_per_axis
 
 echo "Done"
 exit 0

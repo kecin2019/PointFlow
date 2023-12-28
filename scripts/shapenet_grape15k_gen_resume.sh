@@ -14,7 +14,7 @@ log_name="gen/${ds}-cate${cate}"
 data_dir="/workspace/dataset/ShapeNet/ShapeNetCore.v2.PC15k"
 resume_checkpoint="checkpoints/gen/shapenet15k-categrape15000/checkpoint-latest.pt"
 
-python train.py \
+python train_grape.py \
     --log_name ${log_name} \
     --lr ${lr} \
     --dataset_type ${ds} \

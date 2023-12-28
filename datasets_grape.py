@@ -132,7 +132,7 @@ class Uniform15KPC(Dataset):
 
         # Shuffle the index deterministically (based on the number of examples)
         self.shuffle_idx = list(range(len(self.all_points)))
-        random.Random(38383).shuffle(self.shuffle_idx)
+        random.Random(38383).shuffle(self.shuffle_idx)  # 38383为种子值
         self.cate_idx_lst = [self.cate_idx_lst[i] for i in self.shuffle_idx]
         self.all_points = [self.all_points[i] for i in self.shuffle_idx]
         self.all_cate_mids = [self.all_cate_mids[i] for i in self.shuffle_idx]
@@ -146,19 +146,24 @@ class Uniform15KPC(Dataset):
         ):  # using loaded dataset stats
             self.all_points_mean = all_points_mean
             self.all_points_std = all_points_std
+        # 对每个点云单独进行归一化
         elif self.normalize_per_shape:  # per shape normalization
+            # B代表点云的数量，N代表每个点云的点的数量
             B, N = self.all_points.shape[:2]
+            # 得到每个点云的每个维度下的所有点的均值，将均值重塑为（B，1，input_dim）的形状
+            # 即将每个点云的均值多加一个维度，由一维数组转变为二维矩阵。[]->[[]]
             self.all_points_mean = self.all_points.mean(axis=1).reshape(B, 1, input_dim)
-            if normalize_std_per_axis:
+            if normalize_std_per_axis:  # 对每个轴分别进行归一化
                 self.all_points_std = (
                     self.all_points.reshape(B, N, -1)
                     .std(axis=1)
                     .reshape(B, 1, input_dim)
                 )
-            else:
+            else:  # 对所有轴统一进行归一化
                 self.all_points_std = (
                     self.all_points.reshape(B, -1).std(axis=1).reshape(B, 1, 1)
                 )
+        # 根据整个数据集的数据统一进行归一化
         else:  # normalize across the dataset
             self.all_points_mean = (
                 self.all_points.reshape(-1, input_dim)
@@ -177,8 +182,8 @@ class Uniform15KPC(Dataset):
                 )
 
         self.all_points = (self.all_points - self.all_points_mean) / self.all_points_std
-        self.train_points = self.all_points[:, :10000]
-        self.test_points = self.all_points[:, 10000:]
+        self.train_points = self.all_points[:, :10000]  # 选取每个点云的前10000个点作为训练集
+        self.test_points = self.all_points[:, 10000:]  # 选择每个点云的后5000个点作为测试集
 
         self.tr_sample_size = min(10000, tr_sample_size)
         self.te_sample_size = min(5000, te_sample_size)
@@ -239,7 +244,7 @@ class Uniform15KPC(Dataset):
         }
 
 
-class ShapeNetCore(Dataset):
+class ShapeNetCorePC(Dataset):
     def __init__(
         self,
         root_dir,
@@ -289,7 +294,7 @@ class ShapeNetCore(Dataset):
                 except:
                     continue
 
-                assert point_cloud.shape[0] == 15000
+                assert point_cloud.shape[0] == 30000 or point_cloud.shape[0] == 15000
                 self.all_points.append(point_cloud[np.newaxis, ...])
                 self.cate_idx_lst.append(cate_idx)
                 self.all_cate_mids.append((subd, mid))
@@ -310,19 +315,24 @@ class ShapeNetCore(Dataset):
         ):  # using loaded dataset stats
             self.all_points_mean = all_points_mean
             self.all_points_std = all_points_std
+        # 对每个点云单独进行归一化
         elif self.normalize_per_shape:  # per shape normalization
+            # B代表点云的数量，N代表每个点云的点的数量
             B, N = self.all_points.shape[:2]
+            # 得到每个点云的每个维度下的所有点的均值，将均值重塑为（B，1，input_dim）的形状
+            # 即将每个点云的均值多加一个维度，由一维数组转变为二维矩阵。[]->[[]]
             self.all_points_mean = self.all_points.mean(axis=1).reshape(B, 1, input_dim)
-            if normalize_std_per_axis:
+            if normalize_std_per_axis:  # 对每个轴分别进行归一化
                 self.all_points_std = (
                     self.all_points.reshape(B, N, -1)
                     .std(axis=1)
                     .reshape(B, 1, input_dim)
                 )
-            else:
+            else:  # 对所有轴统一进行归一化
                 self.all_points_std = (
                     self.all_points.reshape(B, -1).std(axis=1).reshape(B, 1, 1)
                 )
+        # 根据整个数据集的数据统一进行归一化
         else:  # normalize across the dataset
             self.all_points_mean = (
                 self.all_points.reshape(-1, input_dim)
@@ -341,11 +351,11 @@ class ShapeNetCore(Dataset):
                 )
 
         self.all_points = (self.all_points - self.all_points_mean) / self.all_points_std
-        self.train_points = self.all_points[:, :10000]
-        self.test_points = self.all_points[:, 10000:]
+        self.train_points = self.all_points
+        self.test_points = self.all_points
 
-        self.tr_sample_size = min(10000, tr_sample_size)
-        self.te_sample_size = min(5000, te_sample_size)
+        # self.tr_sample_size = min(10000, tr_sample_size)
+        # self.te_sample_size = min(5000, te_sample_size)
         print("Total number of data:%d" % len(self.train_points))
         print(
             "Min number of points: (train)%d (test)%d"
@@ -361,6 +371,7 @@ class ShapeNetCore(Dataset):
 
         return self.all_points_mean.reshape(1, -1), self.all_points_std.reshape(1, -1)
 
+    # TODO: 这个函数有起到什么作用？我们是否可以删除这个函数？
     def renormalize(self, mean, std):
         self.all_points = self.all_points * self.all_points_std + self.all_points_mean
         self.all_points_mean = mean
@@ -506,7 +517,7 @@ class ModelNet10PointClouds(Uniform15KPC):
         )
 
 
-class ShapeNet15kPointClouds(Uniform15KPC):
+class ShapeNet15kPointClouds(ShapeNetCorePC):
     def __init__(
         self,
         root_dir="data/ShapeNetCore.v2.PC15k",
