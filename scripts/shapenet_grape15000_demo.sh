@@ -6,6 +6,6 @@ python demo.py \
     --dims 512-512-512 \
     --latent_dims 256-256 \
     --use_latent_flow \
-    --num_sample_shapes 100 \
-    --num_sample_points 5000 
+    --num_sample_shapes 5 \
+    --num_sample_points 100000
 
